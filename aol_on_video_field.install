@@ -1,0 +1,133 @@
+<?php
+
+/**
+ * @file
+ * Installation file for AOL ON Video module.
+ */
+
+/*
+* Implements hook_schema().
+*/
+function aol_on_video_field_schema() {
+  $schema['aol_on_video_field'] = array(
+    'description' => t('Store AOL ON Embed Video Player Setting'),
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => t('AOL Embeded player id'),
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => t('Player Name'),
+      ),
+      'description' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => t('Player description'),
+      ),
+      'player' => array(
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'description' => t('Player machine name'),
+      ),
+      'width' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'normal',
+        'default' => 600,
+        'not null' => TRUE,
+        'description' => t('AOL Embeded player width'),
+      ),
+      'height' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'normal',
+        'default' => 338,
+        'not null' => TRUE,
+        'description' => t('AOL Embeded player hegith'),
+      ),
+      'settings' => array(
+        'type' => 'blob',
+        'suze' => 'big',
+        'not null' => TRUE,
+        'description' => t('AOL ON API Serialized Query string'),
+      ),
+    ),
+    'primary key' => array('pid'),
+    'unique keys' => array('player' => array('player')),
+  );
+
+  $schema['cache_ami_aol_on'] = drupal_get_schema_unprocessed('system', 'cache');
+
+  return $schema;
+}
+
+
+/**
+ * Implements hook_install().
+ */
+function aol_on_video_field_install() {
+  $api_options = array(
+    'videoControlDisplayColor' => '#191919',
+    'colorPallet' => '#f12430',
+    'relatedMode' => 1,
+    'shuffle' => 1,
+    'sequential' => 0,
+    'hasCompanion' => 'false',
+    'companionPos' => 'right',
+  );
+
+  $settings = serialize($api_options);
+  $values[] = array(
+    'name' => 'Video Node',
+    'description' => 'AOL Embedded Video Player for Video Node',
+    'player' => 'node',
+    'width' => '946',
+    'height' => '529',
+    'settings' => $settings,
+  );
+  $values[] = array(
+    'name' => 'Video on Video channel page',
+    'description' => 'AOL Embedded Video Player for Video channel page',
+    'player' => 'video-channel-page',
+    'width' => '970',
+    'height' => '576',
+    'settings' => $settings,
+  );
+  $values[] = array(
+    'name' => 'Video Module in Home Page',
+    'description' => 'AOL Embedded Video Player for Video Module in Home Page',
+    'player' => 'video-module-home',
+    'width' => '315',
+    'height' => '207',
+    'settings' => $settings,
+  );
+  $values[] = array(
+    'name' => 'Video Module in article page',
+    'description' => 'AOL Embedded Video Player for article node page',
+    'player' => 'video-module-article',
+    'width' => '612',
+    'height' => '403',
+    'settings' => $settings,
+  );
+
+  $insert = db_insert('aol_on_video_field')->fields(array(
+    'name',
+    'description',
+    'player',
+    'width',
+    'height',
+    'settings'
+  ));
+  foreach ($values as $value) {
+    $insert->values($value);
+  }
+  $insert->execute();
+}
