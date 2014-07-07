@@ -1,0 +1,341 @@
+<?php
+
+/**
+ * @file AMI Aol on video module file.
+ */
+
+/*
+ * Implements hook_menu().
+ */
+function video_embed_aol_menu(){
+  $items['admin/config/media/aol_on'] = array(
+    'title' => 'AOL ON Video Settings',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('video_embed_aol_setting_form'),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'video_embed_aol.inc'
+  );
+
+  $items['admin/config/media/aol_on/setting'] = array(
+    'title' => 'General',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+  );
+
+  $items['admin/config/media/aol_on/players'] = array(
+    'title' => t('AOL ON Player List'),
+    'description' => t('AOL ON Video Embedded Player Setting'),
+    'page callback' => 'video_embed_aol_player_page',
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_TASK,
+  );
+
+  $items['admin/config/media/aol_on/players/new'] = array(
+    'title' => 'Add New Player',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('video_embed_aol_player_form'),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_LOCAL_ACTION,
+    'file' => 'video_embed_aol.inc'
+  );
+
+  $items['admin/config/media/aol_on/players/%video_embed_aol_player/edit'] = array(
+    'title' => 'Edit Player',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('video_embed_aol_player_form', 5),
+    'access arguments' => array('administer site configuration'),
+    'type' => MENU_CALLBACK,
+    'file' => 'video_embed_aol.inc'
+  );
+
+  $items['admin/config/media/aol_on/players/%video_embed_aol_player/delete'] = array(
+    'title' => 'Delete Player Confirm',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('video_embed_aol_player_delete_form', 5),
+    'access arguments' => array('administer site configuration'),
+    'file' => 'video_embed_aol.inc'
+  );
+
+  return $items;
+}
+
+/**
+ * Function to load aol player from aol_player table.
+ *
+ * @param int|string $pid
+ *   player unique identifier.
+ *
+ * @return bool|object
+ */
+function video_embed_aol_player_load($pid) {
+  if (is_numeric($pid)) {
+    $player = db_query('SELECT * FROM {aol_player} WHERE pid = :pid', array(':pid' => $pid))->fetch();
+  }
+  else {
+    $player = db_query('SELECT * FROM {aol_player} WHERE player = :player', array(':player' => $pid))->fetch();
+  }
+
+  if (!empty($player)) {
+    $settings = unserialize($player->settings);
+    unset($player->settings);
+    return (object) array_merge((array) $player, (array) $settings);
+  }
+
+  return FALSE;
+}
+
+/**
+ * Save function for aol player.
+ *
+ * @param object $player
+ *   player object.
+ *
+ * @return mixed
+ */
+function video_embed_aol_player_save($player) {
+  if (empty($player->pid)) {
+    return db_insert('aol_player')
+      ->fields(array(
+        'name' => $player->name,
+        'description' => $player->description,
+        'player' => $player->player,
+        'width' => $player->width,
+        'height' => $player->height,
+        'settings' => serialize($player->settings),
+      ))
+      ->execute();
+  }
+  else {
+    return db_update('aol_player')
+      ->fields(array(
+        'name' => $player->name,
+        'description' => $player->description,
+        'player' => $player->player,
+        'width' => $player->width,
+        'height' => $player->height,
+        'settings' => serialize($player->settings),
+      ))
+      ->condition('pid', $player->pid)
+      ->execute();
+  }
+}
+
+/**
+ * Delete function for aol player.
+ *
+ * @param int|string $pid
+ *   player id.
+ */
+function video_embed_aol_player_delete($pid) {
+  return db_delete('aol_player')
+    ->condition('pid', $pid)
+    ->execute();
+}
+
+/**
+ * Function to load all aol players.
+ *
+ * @return mixed
+ */
+function video_embed_aol_player_load_all() {
+  return db_query('SELECT pid, name, player, width, height FROM {aol_player} ORDER BY name')
+    ->fetchAll();
+}
+
+/**
+ * Get player list function.
+ *
+ * @return mixed
+ */
+function video_embed_aol_player_list() {
+  return db_query('SELECT pid, name FROM {aol_player} ORDER BY name')
+    ->fetchAllKeyed(0, 1);
+}
+
+/**
+ * Implements hook_theme().
+ */
+function video_embed_aol_theme() {
+  $hooks = array();
+
+  $hooks['aol_player'] = array(
+    'render element' => 'video',
+  );
+  $hooks['aol_playlist_player'] = array(
+    'render element' => 'video',
+  );
+
+  return $hooks;
+}
+
+/**
+ * Theme function for 'video_embed_aol_video' text field formatter.
+ */
+function theme_aol_player($attributes) {
+  if (!empty($attributes['video'])) {
+    $sid = $attributes['video']['items'][0]['sid'];
+    $video_id = $attributes['video']['items'][0]['video_id'];
+    $player   = $attributes['video']['items'][0]['player'];
+    $query    = $attributes['video']['items'][0]['player_query'];
+    $width    = $attributes['video']['items'][0]['player_width'];
+    $height   = $attributes['video']['items'][0]['player_height'];
+  }
+  else {
+    $sid = variable_get("video_embed_aol_sid");
+
+    if (!empty($attributes['video_id']) && isset($attributes['player'])) {
+      $video_id = $attributes['video_id'];
+      $player_info = video_embed_aol_player_load($attributes['player']);
+      $player = $player_info->pid;
+      $query  = _video_embed_aol_build_query($player_info);
+      $width  = $player_info->width;
+      $height = $player_info->height;
+    }
+    else {
+      return '';
+    }
+  }
+
+  $video_info = _get_aol_video_info($video_id, $sid);
+
+  if (is_numeric($player)) {
+    $output = '<div class="ami-aol-player" style="margin:0 auto;width:'.$width.'px;height:'.$height.'px;"
+                    itemprop="video" itemscope itemtype="http://schema.org/VideoObject">';
+
+    if (!empty($video_info->items[0])) {
+      $output .= '
+        <meta itemprop="name" content="' . $video_info->items[0]->title . '">
+        <meta itemprop="duration" content="' . $video_info->items[0]->duration . '" />
+        <meta itemprop="thumbnailUrl" content="' . $video_info->items[0]->image . '" />
+        <meta itemprop="contentURL" content="' . $video_info->items[0]->videoUrl . '" />
+        <meta itemprop="embedURL" content="' . $video_info->items[0]->videoUrl . '" />
+        <meta itemprop="uploadDate" content="' . $video_info->items[0]->pubDate . '" />
+        <meta itemprop="expires" content="' . $video_info->items[0]->expDate . '" />
+        <meta itemprop="description" content="' .  $video_info->items[0]->description . '"/>';
+    }
+
+    $output .= '<script type="text/javascript" src="http://pshared.5min.com/Scripts/PlayerSeed.js?sid=' . $sid . '&amp;playList=' . $video_id  . '&amp;' . $query . '"></script></div>';
+  }
+  else {
+    $url = url('node/' . $attributes['video']['items'][0]['nid'], array('absolute' => TRUE));
+    $img_src = $video_info->items[0]->image;
+    $output = "<div><a href='" . $url . "'><img src='" . $img_src . "'></a></div>";
+  }
+  return $output;
+}
+
+/**
+ * Custom function to get video data from aol network.
+ *
+ * @param $video_id
+ *   video unique identifier.
+ *
+ * @param $sid
+ *   ami aol network identifier
+ *
+ * @return mixed
+ */
+function _get_aol_video_info($video_id, $sid){
+  $url = 'http://api.5min.com/video/' . $video_id . '/info.json?sid=' . $sid;
+  $videoKey = 'ami_aol_url_' . md5($url);
+  $info = cache_get($videoKey, 'cache_video_embed_aol');
+
+  if ($info == FALSE) {
+    $result = drupal_http_request($url);
+    $data = json_decode($result->data);
+    cache_set($videoKey, $data, 'cache_video_embed_aol', CACHE_TEMPORARY);
+  }
+  else {
+    $data = $info->data;
+  }
+
+  return $data;
+}
+
+/**
+ * Theme function for 'video_embed_aol_video_playlist_id' text field formatter.
+ */
+function theme_aol_playlist_player($attributes) {
+  if (!empty($attributes['video'])) {
+    $sid = $attributes['video']['items'][0]['sid'];
+    $playlist_id = $attributes['video']['items'][0]['playlist_id'];
+    $player   = $attributes['video']['items'][0]['player'];
+    $query    = $attributes['video']['items'][0]['player_query'];
+    $width    = $attributes['video']['items'][0]['player_width'];
+    $height   = $attributes['video']['items'][0]['player_height'];
+  }
+
+  $video_info = _get_aol_playlist_info($playlist_id, $sid);
+  if (is_numeric($player)) {
+    $output = '<div class="ami-aol-player" style="margin:0 auto;width:'.$width.'px;height:'.$height.'px;"
+                    itemprop="video" itemscope itemtype="http://schema.org/VideoObject">';
+
+    if (!empty($video_info->items[0])) {
+      $output .= '
+        <meta itemprop="name" content="' . $video_info->items[0]->title . '">
+        <meta itemprop="duration" content="' . $video_info->items[0]->duration . '" />
+        <meta itemprop="thumbnailUrl" content="' . $video_info->items[0]->image . '" />
+        <meta itemprop="contentURL" content="' . $video_info->items[0]->videoUrl . '" />
+        <meta itemprop="embedURL" content="' . $video_info->items[0]->videoUrl . '" />
+        <meta itemprop="uploadDate" content="' . $video_info->items[0]->pubDate . '" />
+        <meta itemprop="expires" content="' . $video_info->items[0]->expDate . '" />
+        <meta itemprop="description" content="' .  $video_info->items[0]->description . '"/>';
+    }
+
+    $output .= '<script type="text/javascript" src="http://pshared.5min.com/Scripts/PlayerSeed.js?sid=' . $sid . '&amp;' . $query . '"></script></div>';
+  }
+  else {
+    $url = url('node/' . $attributes['video']['items'][0]['nid'], array('absolute' => TRUE));
+    $img_src = $video_info->items[0]->image;
+    $output = "<div><a href='" . $url . "'><img src='" . $img_src . "'></a></div>";
+  }
+  return $output;
+}
+
+/**
+ * Custom function to get data from aol network for playlist.
+ *
+ * @param int|string $playlist_id
+ *   playlist unique identifier
+ *
+ * @return mixed
+ */
+function _get_aol_playlist_info($playlist_id){
+  $url = 'http://api.5min.com/video/list/info.json?Video_Group_Id=' . $playlist_id;
+  $videoKey = 'ami_aol_url_' . md5($url);
+  $info = cache_get($videoKey, 'cache_video_embed_aol');
+
+  if ($info == FALSE) {
+    $result = drupal_http_request($url);
+    $data = json_decode($result->data);
+    cache_set($videoKey, $data, 'cache_video_embed_aol', CACHE_TEMPORARY);
+  }
+  else {
+    $data = $info->data;
+  }
+
+  return $data;
+}
+
+
+/**
+ *
+ * @param $vars
+ */
+function _video_embed_aol_build_query($player_data){
+  $skip_fields = array('pid', 'name', 'description', 'player');
+  foreach((array)$player_data as $key => $value){
+    if(!in_array($key, $skip_fields)){
+      $data[$key] = $value;
+    }
+  }
+  $query = http_build_query($data, '', '&amp;');
+
+  return $query;
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function video_embed_aol_flush_caches() {
+  return array('cache_video_embed_aol');
+}

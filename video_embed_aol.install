@@ -1,0 +1,77 @@
+<?php
+
+/**
+ * @file
+ * Installation file for AOL ON Video module.
+ */
+
+/**
+ * Implements hook_install().
+ */
+function video_embed_aol_install() {
+
+}
+
+/*
+ * Implements hook_schema().
+ */
+function video_embed_aol_schema() {
+  $schema['video_embed_aol_player'] = array(
+    'description' => t('Store AOL ON Embed Video Player Setting'),
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => t('AOL Embeded player id'),
+      ),
+      'name' => array(
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'description' => t('Player Name'),
+      ),
+      'description' => array(
+        'type' => 'text',
+        'size' => 'normal',
+        'not null' => TRUE,
+        'description' => t('Player description'),
+      ),
+      'player' => array(
+        'type' => 'varchar',
+        'length' => 50,
+        'not null' => TRUE,
+        'description' => t('Player machine name'),
+      ),
+      'width' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'normal',
+        'default' => 600,
+        'not null' => TRUE,
+        'description' => t('AOL Embeded player width'),
+      ),
+      'height' => array(
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'size' => 'normal',
+        'default' => 338,
+        'not null' => TRUE,
+        'description' => t('AOL Embeded player hegith'),
+      ),
+      'settings' => array(
+        'type' => 'blob',
+        'suze' => 'big',
+        'not null' => TRUE,
+        'description' => t('AOL ON API Serialized Query string'),
+      ),
+    ),
+    'primary key' => array('pid'),
+    'unique keys' => array('player' => array('player')),
+  );
+
+  $schema['cache_video_embed_aol'] = drupal_get_schema_unprocessed('system', 'cache');
+
+  return $schema;
+}
