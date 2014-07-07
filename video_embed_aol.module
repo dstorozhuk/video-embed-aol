@@ -4,6 +4,13 @@
  * @file AMI Aol on video module file.
  */
 
+module_load_include('inc', 'video_embed_aol', 'video_embed_aol.video_embed_field');
+
+/**
+ * This constant provides AOL ON single video api endpoint.
+ */
+define('VIDEO_EMBED_AOL_API_SINGLE_VIDEO_ENDPOINT', 'http://api.5min.com/video');
+
 /*
  * Implements hook_menu().
  */
@@ -234,21 +241,22 @@ function theme_aol_player($attributes) {
  *
  * @return mixed
  */
-function _get_aol_video_info($video_id, $sid){
-  $url = 'http://api.5min.com/video/' . $video_id . '/info.json?sid=' . $sid;
-  $videoKey = 'ami_aol_url_' . md5($url);
-  $info = cache_get($videoKey, 'cache_video_embed_aol');
-
-  if ($info == FALSE) {
-    $result = drupal_http_request($url);
-    $data = json_decode($result->data);
-    cache_set($videoKey, $data, 'cache_video_embed_aol', CACHE_TEMPORARY);
+function _get_aol_video_info($video_id){
+  $cached = &drupal_static(__FUNCTION__ . $video_id, '');
+  if (!empty($cached)) {
+    return $cached;
   }
-  else {
-    $data = $info->data;
+  $url = VIDEO_EMBED_AOL_API_SINGLE_VIDEO_ENDPOINT . '/' . $video_id . '/info.json';
+  $result = drupal_http_request($url, array('timeout' => '3'));
+  if ($result->code == '200') {
+    $data = drupal_json_decode($result->data);
+    if (isset($data['api-info'])) {
+      $cached = $item_info = reset($data['items']);
+      return $item_info ;
+    }
+    return FALSE;
   }
-
-  return $data;
+  return FALSE;
 }
 
 /**

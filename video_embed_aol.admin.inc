@@ -91,33 +91,10 @@ function video_embed_aol_player_delete_form_submit($form, &$form_state) {
  *
  * @see video_embed_aol_menu().
  */
-function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
-  // Store current form data to storage.
-  if (!empty($form_state['values'])) {
-    $form_state['storage']['saved'] = $form_state['values'];
-  }
+function video_embed_aol_player_form($form = array(), &$form_state = array(), $player = NULL, $defaults) {
 
   $form = array();
 
-  $form['pid'] = array(
-    '#type' => 'hidden',
-    '#value' => !empty($player->pid) ? $player->pid : '',
-  );
-
-  $form['name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Player Name'),
-    '#default_value' => !empty($player->name) ? $player->name : '',
-    '#maxlength' => 255,
-    '#required' => TRUE,
-  );
-  $form['player'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Player Machine Name'),
-    '#default_value' => !empty($player->player) ? $player->player : '',
-    '#maxlength' => 50,
-    '#required' => TRUE,
-  );
   $form['description'] = array(
     '#type' => 'textfield',
     '#title' => t('Player description'),
@@ -127,7 +104,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
   $form['width'] = array(
     '#type' => 'textfield',
     '#title' => t('Player Width'),
-    '#default_value' => !empty($player->width) ? $player->width : '',
+    '#default_value' => $defaults['width'],
     '#size' => 5,
     '#maxlength' => 4,
     '#required' => TRUE,
@@ -137,7 +114,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
   $form['height'] = array(
     '#type' => 'textfield',
     '#title' => t('Player Height'),
-    '#default_value' => !empty($player->height) ? $player->height : '',
+    '#default_value' => $defaults['height'],
     '#size' => 5,
     '#maxlength' => 4,
     '#required' => TRUE,
@@ -154,7 +131,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'textfield',
     '#title' => t('Video Control Display Color'),
     '#description' => t('Controls color of menu bar. Default color is #191919'),
-    '#default_value' => !empty($player->videoControlDisplayColor) ? $player->videoControlDisplayColor : '',
+    '#default_value' => $defaults['extra_setting']['videoControlDisplayColor'],
     '#maxlength' => 7,
     '#size' => 10,
   );
@@ -162,7 +139,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'textfield',
     '#title' => t('Color Pallet'),
     '#description' => t('Controls color scheme of functions/buttons. e.g. #FFEB00'),
-    '#default_value' => !empty($player->colorPallet) ? $player->colorPallet : '',
+    '#default_value' => $defaults['extra_setting']['colorPallet'],
     '#maxlength' => 7,
     '#size' => 10,
   );
@@ -170,15 +147,15 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'textfield',
     '#title' => t('Top Header'),
     '#description' => t('Allows a partner to type in any text above the video player.  Requires an additional 20px to the height of the player in order to maintain aspect ration'),
-    '#default_value' => !empty($player->topHeader) ? $player->topHeader : '',
+    '#default_value' => $defaults['extra_setting']['topHeader'],
     '#maxlength' => 25,
     '#size' => 25,
   );
   $form['extra_setting']['volume'] = array(
     '#type' => 'textfield',
-    '#title' => 'Volume',
+    '#title' => t('Volume'),
     '#description' => t('Controls the default player volume.  Value can be from 1 to 100 (Percent)'),
-    '#default_value' => !empty($player->volume) ? $player->volume : '',
+    '#default_value' => $defaults['extra_setting']['volume'],
     '#maxlength' => 3,
     '#size' => 4,
     '#allowed_range' => array('min' => 1, 'max' => 100),
@@ -188,7 +165,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'radios',
     '#title' => 'Related Mode',
     '#description' => t('Determines the display style of the related videos displayed on the player'),
-    '#default_value' => !empty($player->relatedMode) ? $player->relatedMode : '',
+    '#default_value' => $defaults['extra_setting']['relatedMode'],
     '#options' => array(
       0 => 'none',
       1 => 'right hidden (default)',
@@ -201,7 +178,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'textfield',
     '#title' => 'Related Mode Bottom Height',
     '#description' => t('Controls the height of the bottom related video panes'),
-    '#default_value' => !empty($player->relatedBottomHeight) ? $player->relatedBottomHeight : '',
+    '#default_value' => $defaults['extra_setting']['relatedBottomHeight'],
     '#maxlength' => 3,
     '#size' => 4,
     '#element_validate' => array('_form_aol_on_related_bottom_height_check'),
@@ -210,14 +187,14 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'radios',
     '#title' => 'Shuffle',
     '#description' => t('Controls whether the videos in a player are shuffled or not each load'),
-    '#default_value' => !empty($player->shuffle) ? $player->shuffle : '',
+    '#default_value' => $defaults['extra_setting']['shuffle'],
     '#options' => array(0 => 'Shuffle', 1 => 'Do Not Shuffle (default)'),
   );
   $form['extra_setting']['sequential'] = array(
     '#type' => 'radios',
     '#title' => 'Sequential',
     '#description' => t('Controls whether the videos in the playList parameter automatically play one after the other'),
-    '#default_value' => !empty($player->sequential) ? $player->sequential : '',
+    '#default_value' => $defaults['extra_setting']['sequential'],
     '#options' => array(
       0 => 'No Sequential Play (default)',
       1 => 'Sequential Play'
@@ -227,14 +204,14 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'radios',
     '#title' => 'Auto-Progress',
     '#description' => t('This contorls whether or not the player auto-progresses regardless if there is a group of videos, such as playlist. If playlist reached the last video, Video Seed will run against that video and auto-progress to the most relavant video in the library'),
-    '#default_value' => !empty($player->isAP) ? $player->isAP : '',
+    '#default_value' => $defaults['extra_setting']['isAP'],
     '#options' => array('' => t('no setting (default)'), 0 => 'No', 1 => 'yes'),
   );
   $form['extra_setting']['isFP'] = array(
     '#type' => 'radios',
     '#title' => 'Fixed Playlist',
     '#description' => t('This controls where or not the playlist and related-pane are fixed based off of VideoSeed/Semantic matching against the 1st video in player.  If a manual or smart playlist from the console is already is being used, it will continue to use that'),
-    '#default_value' => !empty($player->isFP) ? $player->isFP : '',
+    '#default_value' => $defaults['extra_setting']['isFP'],
     '#options' => array('' => t('no setting (default)'), 0 => 'No', 1 => 'yes'),
   );
 
@@ -249,14 +226,14 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'radios',
     '#title' => 'Companion',
     '#description' => t('Set companion banner on or off'),
-    '#default_value' => !empty($player->hasCompanion) ? $player->hasCompanion : '',
+    '#default_value' => $defaults['ads']['hasCompanion'],
     '#options' => array('false' => 'off', 'true' => 'on (default)'),
   );
   $form['ads']['companionPos'] = array(
     '#type' => 'radios',
     '#title' => 'Companion Position',
     '#description' => t('Location of companion banner adjacent to player'),
-    '#default_value' => !empty($player->companionPos) ? $player->companionPos : '',
+    '#default_value' => $defaults['ads']['companionPos'],
     '#options' => array(
       'right' => 'right (default)',
       'left' => 'left',
@@ -268,7 +245,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'textfield',
     '#title' => t('Companion Banner Custom ID of &lt;div&gt; tag'),
     '#description' => t('Use instead of companionPos. Draws the companion banner in a custom element. e.g. &lt;div id="banner"&gt;&lt;/div&gt;'),
-    '#default_value' => !empty($player->cbCustomID) ? $player->cbCustomID : '',
+    '#default_value' => $defaults['ads']['cbCustomID'],
     '#size' => 50,
     '#maxlength' => 50,
   );
@@ -276,7 +253,7 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'select',
     '#title' => t('Inner Margin'),
     '#description' => t('Determines the number of pixels margin between player and companion banner'),
-    '#default_value' => !empty($player->innerMargin) ? $player->innerMargin : '',
+    '#default_value' => $defaults['ads']['innerMargin'],
     '#options' => range(0, 10, 1),
   );
 
@@ -291,35 +268,22 @@ function video_embed_aol_player_form($form, &$form_state, $player = NULL) {
     '#type' => 'textfield',
     '#title' => t('Categories'),
     '#description' => t('Defines which of AOL On categories it searches within. Valid AOL ON categories delimited with a comma. e.g. 78,80'),
-    '#default_value' => !empty($player->categories) ? $player->categories : '',
+    '#default_value' => $defaults['video_seed']['categories'],
     '#element_validate' => array('_form_aol_on_seed_value_check'),
   );
   $form['video_seed']['fallback'] = array(
     '#type' => 'textfield',
     '#title' => t('Fall Back'),
     '#description' => t('If no video seed results are found or for this page, will present fallback videos(default) or video of the day in defined category. Valid AOL ON categories delimited with a comma. e.g. 78,80'),
-    '#default_value' => !empty($player->fallback) ? $player->fallback : '',
+    '#default_value' => $defaults['video_seed']['categories'],
     '#element_validate' => array('_form_aol_on_seed_value_check'),
   );
   $form['video_seed']['url'] = array(
     '#type' => 'textfield',
     '#title' => t('URL'),
     '#description' => t('Pass the URL you want to Seed, use only if different than the page URL'),
-    '#default_value' => !empty($player->url) ?  $player->url : '',
+    '#default_value' => $defaults['video_seed']['url'],
     '#element_validate' => array('_form_aol_on_url_check'),
-  );
-
-  $form['submit'] = array(
-    '#id' => 'ami-aol-on-player-form-submit',
-    '#type' => 'submit',
-    '#value' => !empty($player->pid) ? t('Update') : t('Add'),
-  );
-
-  $form['delete'] = array(
-    '#id' => 'ami-aol-on-player-form-delete',
-    '#type' => 'submit',
-    '#value' => t('Delete'),
-    '#access' => !empty($player->pid) ? TRUE : FALSE,
   );
 
   return $form;
@@ -464,8 +428,8 @@ function video_embed_aol_player_form_submit($form, &$form_state) {
     video_embed_aol_player_save((object) $form_state['values']);
     $form_state['redirect'] = 'admin/config/media/aol_on/players';
   }
-  elseif ($form_state['clicked_button']['#id'] == 'ami-aol-on-player-form-delete') {
-    $pid = $form_state['values']['pid'];
-    $form_state['redirect'] = 'admin/config/media/aol_on/players/' . $pid . '/delete';
-  }
+//  elseif ($form_state['clicked_button']['#id'] == 'ami-aol-on-player-form-delete') {
+//    $pid = $form_state['values']['pid'];
+//    $form_state['redirect'] = 'admin/config/media/aol_on/players/' . $pid . '/delete';
+//  }
 }
