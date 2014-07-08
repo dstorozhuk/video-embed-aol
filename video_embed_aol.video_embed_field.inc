@@ -36,12 +36,20 @@ function video_embed_aol_video_embed_handler_info() {
     'data_function' => 'video_embed_aol_handle_aol_data',
     'form' => 'video_embed_aol_handle_aol_form',
     'domains' => array(
-      'api.5min.com',
       'on.aol.com'
     ),
     'defaults' => array(
-      'width' => 640,
-      'height' => 360,
+      "sid"=>'',
+      "skey"=>'',
+      "add_ons"=>0,
+      "auto_start"=>0,
+      "country"=>"",
+      "domain"=>'all',
+      "num_related_return"=>10,
+      "transcript"=>0,
+      "video_language"=>'en',
+      'width' => 480,
+      'height' => 401,
     ),
   );
 
@@ -54,7 +62,8 @@ function video_embed_aol_video_embed_handler_info() {
  * @see video_embed_aol_video_embed_handler_info().
  */
 function video_embed_aol_handle_aol($url, $settings) {
-  $video_info = _video_embed_aol_extract_aol_video_data_from_url($url);
+  $video_info = _video_embed_aol_extract_aol_video_data_from_url($url, $settings);
+  dpm($video_info);
   if (isset($video_info['player'])) {
     return array(
       '#markup' => $video_info['player']['source'],
@@ -94,7 +103,77 @@ function video_embed_aol_handle_aol_thumbnail($url) {
 function video_embed_aol_handle_aol_form($defaults) {
   $form = array();
   module_load_include('inc', 'video_embed_aol', 'video_embed_aol.admin');
-  $form += video_embed_aol_player_form(array(), $d =  array(), NULL, $defaults);
+  include_once DRUPAL_ROOT . '/includes/locale.inc';
+  $country_list = country_get_list();
+  $languages = array(
+    'en' => t('English'),
+    'cn' => t('Chinese'),
+    'fr' => t('French'),
+    'jp' => t('Japanese'),
+    'es' =>t('Spanish'),
+    'de' => t('German/Deutch'),
+    'any' => t('Any language')
+  );
+  $yes_no_options = array(t('No'), t('Yes'));
+
+  $settings = array(
+    "height"                 => array(
+      "#description" => t("Embed height value"),
+      "#type"        => "textfield"
+    ),
+    "width"                  => array(
+      "#description" => t("Embed width value (Default 480)"),
+      "#type"        => "textfield",
+    ),
+    "sid"                    => array(
+      "#description" => t("Account associated syndicator ID"),
+      "#type"        => "textfield"
+    ),
+    "skey"                   => array(
+      "#description" => t("Setting key"),
+      "#type"        => "textfield"
+    ),
+    "add_ons"                => array(
+      "#description" => t("Include/exclude add-ons for video"),
+      "#type"        => "select",
+      '#options' => $yes_no_options,
+    ),
+    "auto_start"             => array(
+      "#description" => t("The video starts playing automatically"),
+      "#type"        => "select",
+      '#options' => $yes_no_options,
+    ),
+    "country"                => array(
+      "#description" => t("Filter the results to include only videos which are playable in the chosen country"),
+      "#type"        => "select",
+      '#options' => $country_list
+    ),
+    "domain"                 => array(
+      "#description" => t("Account associated domain. If empty then 'all'"),
+      "#type"        => "textfield"
+    ),
+    "num_related_return"     => array(
+      "#description" => t("Number of related videos to return per video."),
+      "#type"        => "select",
+      '#options' => drupal_map_assoc(range(0, 20)),
+    ),
+    "transcript"             => array(
+      "#description" => t("Include/exclude transcript for video"),
+      "#type"        => "select",
+      '#options' => $yes_no_options,
+    ),
+    "video_language"         => array(
+      "#description" => t("Filter by language (Default is English)."),
+      "#type"        => "select",
+      '#options' => $languages,
+    ),
+  );
+
+  foreach ($settings as $field_name => $field) {
+    $form[$field_name]['#title'] = t(drupal_ucfirst(str_replace('_', ' ', $field_name)));
+    $form[$field_name]['#default_value'] = $defaults[$field_name];
+    $form[$field_name] += $field;
+  }
   return $form;
 }
 
@@ -109,39 +188,24 @@ function video_embed_aol_handle_aol_data($url) {
 }
 
 /**
- * Helper function to retrieve data from AOL ON for a given video URL.
- * @param $url
- * The video page url.
- * @return mixed
- */
-function _video_embed_aol_extract_aol_video_data_from_url($url) {
-  $parsed = @parse_url($url);
-  if ($parsed) {
-    if (isset($parsed['path'])) {
-      $exploded_path = explode('-', $parsed['path']);
-      $posible_video_id = end($exploded_path);
-      if (is_numeric($posible_video_id)) {
-        $video_info = _get_aol_video_info($posible_video_id);
-        return $video_info;
-      }
-    }
-  }
-  return FALSE;
-}
-
-/**
  * Implements of hook_field_widget_form_alter().
  */
 function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $context) {
 
   if ($context['field']['type'] == 'video_embed_field') {
     $instance = $context['instance'];
+    $element['#element_validate'][] = 'video_embed_aol_video_url_field_validate';
+    $element['#context'] = $context;
     if ($instance['settings']['use_id']) {
-      $video_info = unserialize($context['items'][$context['delta']]['video_data']);
+      $video_info = array('id' => '');
+      if (isset($context['items'][$context['delta']]['video_data'])) {
+        $video_info = unserialize($context['items'][$context['delta']]['video_data']);
+      }
+
       $element['video_id'] = array(
         '#type' => 'textfield',
         '#title' => t('AOL Video ID'),
-        '#element_validate' => array('video_embed_aol_field_validate'),
+        '#element_validate' => array('video_embed_aol_video_id_field_validate'),
         '#default_value' => $video_info['id'],
         '#field' => $context['field'],
         '#instance' => $instance
@@ -154,7 +218,7 @@ function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $conte
 /**
  * Validate function.
  */
-function video_embed_aol_field_validate($element, &$form_state, $form){
+function video_embed_aol_video_id_field_validate($element, &$form_state, $form){
   $video_id = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
 
   if (empty($video_id)) {
@@ -166,9 +230,14 @@ function video_embed_aol_field_validate($element, &$form_state, $form){
     $video_url_element_parents = array('#parents' => $element['#parents']);
     $video_url_element_parents['#parents'][count($element['#parents']) - 1] = 'video_url';
     form_set_value($video_url_element_parents, $video_info['player']['url'], $form_state);
+    form_set_value($video_url_element_parents, $video_info['player']['url'], $form_state);
   }
   else {
     drupal_set_message(t('Field %name: enable to get information from AOL. Please, try again. ', array('%name' => $element['#title'])), 'error');
   }
+}
 
+function video_embed_aol_video_url_field_validate($element, &$form_state, $form) {
+  $context = $element['#context'];
+  dpm($context, '$context');
 }
