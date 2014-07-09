@@ -58,17 +58,15 @@ function _video_embed_aol_get_video_info($video_id, array $settings = array()) {
     return $cached;
   }
   $url = VIDEO_EMBED_AOL_API_SINGLE_VIDEO_ENDPOINT . '/' . $video_id . '/info.json';
-  $query = array();
-  foreach ($settings as $name => $value) {
+
+  foreach ($settings as &$value) {
     if ($value <= 1 && is_numeric($value)) {
-      $query[$name] = var_export((bool) $value, TRUE);
-    }
-    else {
-      $query[$name] = $value;
+      $value = var_export((bool) $value, TRUE);
     }
   }
-  $query_path = url($url, array('query' => $query));
-  $result = drupal_http_request($query_path, array('timeout' => '2'));
+
+  $query_path = url($url, array('query' => $settings));
+  $result = drupal_http_request($query_path, array('timeout' => '5'));
   if ($result->code == '200') {
     $data = drupal_json_decode($result->data);
     if (isset($data['api-info'])) {
@@ -89,19 +87,24 @@ function _video_embed_aol_get_video_info($video_id, array $settings = array()) {
  * @return mixed
  */
 function _video_embed_aol_extract_aol_video_data_from_url($url, $settings = array()) {
+  $posible_video_id = _video_embed_aol_extract_aol_video_id_from_url($url);
+  $video_info = _video_embed_aol_get_video_info($posible_video_id, $settings);
+  return $video_info;
+}
+
+function _video_embed_aol_extract_aol_video_id_from_url($url) {
   $parsed = @parse_url($url);
   if ($parsed) {
     if (isset($parsed['path'])) {
       $exploded_path = explode('-', $parsed['path']);
       $posible_video_id = end($exploded_path);
       if (is_numeric($posible_video_id)) {
-        $video_info = _video_embed_aol_get_video_info($posible_video_id, $settings);
-
-        return $video_info;
+        return $posible_video_id;
       }
+      return FALSE;
     }
+    return FALSE;
   }
-
   return FALSE;
 }
 
@@ -135,6 +138,7 @@ function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $conte
  * Validate function.
  *
  * Set the video URL if field use video ID instead of full URL.
+ * TODO: add validation, accept only http://on.aol.com/video/...
  */
 function video_embed_aol_video_id_field_validate($element, &$form_state, $form) {
   $video_id = drupal_array_get_nested_value($form_state['values'], $element['#parents']);

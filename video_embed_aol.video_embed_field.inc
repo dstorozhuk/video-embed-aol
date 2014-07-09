@@ -44,14 +44,40 @@ function video_embed_aol_video_embed_handler_info() {
  * @see video_embed_aol_video_embed_handler_info().
  */
 function video_embed_aol_handle_aol($url, $settings) {
-  $video_info = _video_embed_aol_extract_aol_video_data_from_url($url, $settings);
-  if (isset($video_info['player'])) {
-    return array(
-      '#markup' => $video_info['player']['source'],
-    );
+  $video_id = _video_embed_aol_extract_aol_video_id_from_url($url);
+  foreach ($settings as &$value) {
+    if ($value <= 1 && is_numeric($value)) {
+      $value = var_export((bool) $value, TRUE);
+    }
   }
+  // Provide unique id, so we can identify box for particular video on the page.
+  $video_embed_aol_container_id = drupal_html_id('video-embed-aol-container-' . md5($url . serialize($settings)));
+  $boxes_settings[$video_embed_aol_container_id] = $settings;
+  $url = VIDEO_EMBED_AOL_API_SINGLE_VIDEO_ENDPOINT . '/' . $video_id . '/info.json';
+  $js_settings = array(
+    'video_embed_aol' => array(
+      $video_embed_aol_container_id => array('api_endpoint_url' => url($url, array('query' => $settings)))
+    )
+  );
 
-  return '';
+  drupal_add_js($js_settings, array('type' => 'setting'));
+
+  $build = array(
+    '#type' => 'container',
+    '#attached' => array(
+      'js' => array(
+        drupal_get_path('module', 'video_embed_aol') . '/video_embed_aol.js'
+      )
+    ),
+    '#attributes' => array(
+      'class' => array(
+        'video-embed-aol-container'
+      ),
+      'id' => $video_embed_aol_container_id
+    )
+  );
+  $build['message'] = array('#markup' => t(variable_get('video_embed_aol_loading_video_msg', 'Loading video...')));
+  return $build;
 }
 
 /**
