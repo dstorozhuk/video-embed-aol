@@ -1,7 +1,0 @@
-name = AOL ON Video Field
-description = "AOL ON Video Content Fields"
-project = "aol_on_video_field"
-version = "7.x-1.0"
-configure = "admin/config/media/aol_on"
-dependencies[] = field
-dependencies[] = entity
