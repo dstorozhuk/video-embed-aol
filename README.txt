@@ -1,4 +1,4 @@
-AOL Video Embed Field
+Video Embed AOL
 =====================
 
 This module provides integration for AOL ON video network with "Video Embed Field" module.
