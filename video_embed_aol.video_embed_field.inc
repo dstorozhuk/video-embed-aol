@@ -18,7 +18,7 @@ function video_embed_aol_video_embed_handler_info() {
     'data_function'      => 'video_embed_aol_handle_aol_data',
     'form'               => 'video_embed_aol_handle_aol_form',
     'domains'            => array(
-      'on.aol.com'
+      'on.aol.com',
     ),
     'defaults'           => array(
       "sid"                => '',

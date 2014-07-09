@@ -30,9 +30,10 @@ function video_embed_aol_form_field_ui_field_edit_form_alter(&$form, &$form_stat
   $instance = $form['#instance'];
   $form['instance']['settings']['use_id'] = array(
     '#type'          => 'radios',
-    '#title'         => t('Use video ID instead of URL'),
+    '#title'         => t('AOL: Use video ID instead of URL'),
     '#default_value' => $instance['settings']['use_id'],
     '#options'       => array(t('No'), t('Yes')),
+    '#description'   => t('AOI ON videos provider only.')
   );
 }
 
@@ -115,6 +116,8 @@ function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $conte
 
   if ($context['field']['type'] == 'video_embed_field') {
     $instance = $context['instance'];
+    $element['video_url']['#element_validate'][] = 'video_embed_aol_video_url_field_validate';
+//    dpm($context);
     if ($instance['settings']['use_id']) {
       $video_info = array('id' => '');
       if (isset($context['items'][$context['delta']]['video_data'])) {
@@ -138,7 +141,6 @@ function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $conte
  * Validate function.
  *
  * Set the video URL if field use video ID instead of full URL.
- * TODO: add validation, accept only http://on.aol.com/video/...
  */
 function video_embed_aol_video_id_field_validate($element, &$form_state, $form) {
   $video_id = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
@@ -155,5 +157,28 @@ function video_embed_aol_video_id_field_validate($element, &$form_state, $form) 
   }
   else {
     drupal_set_message(t('Field %name: enable to get information from AOL. Please, try again. ', array('%name' => $element['#title'])), 'error');
+  }
+}
+
+/**
+ * Validate function.
+ *
+ * Set the video URL if field use video ID instead of full URL.
+ */
+function video_embed_aol_video_url_field_validate($element, &$form_state, $form) {
+  $video_url = drupal_array_get_nested_value($form_state['values'], $element['#parents']);
+  if (($handler = video_embed_get_handler($video_url)) && $handler['name'] == 'aol') {
+    $parsed_video_url = @parse_url($video_url);
+    if ($video_url) {
+      // Accept only path like http://on.aol.com/video/reasons-for-people-getting-bored-in-relationships-517666458.
+      // Maybe some other rules?
+      $path = trim($parsed_video_url['path'], ' /');
+      $exploded_path = explode('/', $path);
+      if (count($exploded_path) >= 2) {
+        if ($exploded_path[0] != 'video') {
+          form_error($element, t('The video path is not supported.'));
+        }
+      }
+    }
   }
 }
