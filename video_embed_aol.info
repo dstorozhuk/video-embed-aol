@@ -1,7 +1,7 @@
 core = "7.x"
 
 description = "Provide integration with AOL ON Video Content service"
-name = "AOL Video Embed Field"
+name = "Video Embed AOL"
 package = "Media"
 
 version = "7.x-1.0"
