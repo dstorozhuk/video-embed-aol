@@ -67,7 +67,7 @@ function video_embed_aol_handle_aol($url, $settings) {
     '#attached' => array(
       'js' => array(
         drupal_get_path('module', 'video_embed_aol') . '/video_embed_aol.js',
-      )
+      ),
     ),
     '#attributes' => array(
       'class' => array(
