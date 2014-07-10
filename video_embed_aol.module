@@ -2,7 +2,7 @@
 
 /**
  * @file
- * The main module file for video_embed_aol.module
+ * The main module file for video_embed_aol.module.
  *
  * Stores various Drupal hook_implementations and helper functions.
  */
@@ -24,7 +24,7 @@ function video_embed_aol_field_info_alter(&$info) {
 }
 
 /**
- * Implements of hook_form_field_ui_field_edit_form_alter().
+ * Implements hook_form_field_ui_field_edit_form_alter().
  */
 function video_embed_aol_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
   $instance = $form['#instance'];
@@ -33,7 +33,7 @@ function video_embed_aol_form_field_ui_field_edit_form_alter(&$form, &$form_stat
     '#title'         => t('AOL: Use video ID instead of URL'),
     '#default_value' => $instance['settings']['use_id'],
     '#options'       => array(t('No'), t('Yes')),
-    '#description'   => t('AOI ON videos provider only.')
+    '#description'   => t('AOI ON videos provider only.'),
   );
 }
 
@@ -42,15 +42,14 @@ function video_embed_aol_form_field_ui_field_edit_form_alter(&$form, &$form_stat
  * Custom function to get video data from aol network.
  *
  * @param int $video_id
- *   video unique identifier.
- *
+ *   Video unique identifier.
  * @param array $settings
  *   The request settings.
  *
  * @link https://support.aolonnetwork.com/API/VideoSeed.
  *
  * @return mixed
- *  Video info if request succeed.
+ *   Video info if request succeed.
  */
 function _video_embed_aol_get_video_info($video_id, array $settings = array()) {
 
@@ -83,9 +82,12 @@ function _video_embed_aol_get_video_info($video_id, array $settings = array()) {
 
 /**
  * Helper function to retrieve data from AOL ON for a given video URL.
- * @param $url
- * The video page url.
+ *
+ * @param string $url
+ *   The video page url.
+ *
  * @return mixed
+ *   Array of video info or FALSE if can't fetch the info.
  */
 function _video_embed_aol_extract_aol_video_data_from_url($url, $settings = array()) {
   $posible_video_id = _video_embed_aol_extract_aol_video_id_from_url($url);
@@ -93,6 +95,14 @@ function _video_embed_aol_extract_aol_video_data_from_url($url, $settings = arra
   return $video_info;
 }
 
+/**
+ * Helper function to extract AOL ON video ID for a given video URL.
+ *
+ * @param string $url
+ *   The video URL.
+ *
+ * @return bool|mixed
+ */
 function _video_embed_aol_extract_aol_video_id_from_url($url) {
   $parsed = @parse_url($url);
   if ($parsed) {
@@ -110,14 +120,13 @@ function _video_embed_aol_extract_aol_video_id_from_url($url) {
 }
 
 /**
- * Implements of hook_field_widget_form_alter().
+ * Implements hook_field_widget_form_alter().
  */
 function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $context) {
 
   if ($context['field']['type'] == 'video_embed_field') {
     $instance = $context['instance'];
     $element['video_url']['#element_validate'][] = 'video_embed_aol_video_url_field_validate';
-//    dpm($context);
     if ($instance['settings']['use_id']) {
       $video_info = array('id' => '');
       if (isset($context['items'][$context['delta']]['video_data'])) {
@@ -130,7 +139,7 @@ function video_embed_aol_field_widget_form_alter(&$element, &$form_state, $conte
         '#element_validate' => array('video_embed_aol_video_id_field_validate'),
         '#default_value'    => $video_info['id'],
         '#field'            => $context['field'],
-        '#instance'         => $instance
+        '#instance'         => $instance,
       );
       hide($element['video_url']);
     }
@@ -156,7 +165,8 @@ function video_embed_aol_video_id_field_validate($element, &$form_state, $form) 
     form_set_value($video_url_element_parents, $video_info['player']['url'], $form_state);
   }
   else {
-    drupal_set_message(t('Field %name: enable to get information from AOL. Please, try again. ', array('%name' => $element['#title'])), 'error');
+    drupal_set_message(t('Field %name: enable to get information from AOL.
+    Please, try again. ', array('%name' => $element['#title'])), 'error');
   }
 }
 
@@ -170,7 +180,8 @@ function video_embed_aol_video_url_field_validate($element, &$form_state, $form)
   if (($handler = video_embed_get_handler($video_url)) && $handler['name'] == 'aol') {
     $parsed_video_url = @parse_url($video_url);
     if ($video_url) {
-      // Accept only path like http://on.aol.com/video/reasons-for-people-getting-bored-in-relationships-517666458.
+      // Accept only path like
+      // http://on.aol.com/video/reasons-for-people-getting-bored-in-relationships-517666458.
       // Maybe some other rules?
       $path = trim($parsed_video_url['path'], ' /');
       $exploded_path = explode('/', $path);
