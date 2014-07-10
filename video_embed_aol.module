@@ -102,6 +102,7 @@ function _video_embed_aol_extract_aol_video_data_from_url($url, $settings = arra
  *   The video URL.
  *
  * @return bool|mixed
+ *   The AOL ON video ID or FALSE if can't extract video ID.
  */
 function _video_embed_aol_extract_aol_video_id_from_url($url) {
   $parsed = @parse_url($url);

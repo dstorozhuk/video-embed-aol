@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements of hook_video_embed_handler_info().
+ * Implements hook_video_embed_handler_info().
  */
 function video_embed_aol_video_embed_handler_info() {
   $handlers = array();
@@ -41,7 +41,7 @@ function video_embed_aol_video_embed_handler_info() {
 /**
  * Implements of 'function' callback.
  *
- * @see video_embed_aol_video_embed_handler_info().
+ * @see video_embed_aol_video_embed_handler_info()
  */
 function video_embed_aol_handle_aol($url, $settings) {
   $video_id = _video_embed_aol_extract_aol_video_id_from_url($url);
@@ -52,12 +52,12 @@ function video_embed_aol_handle_aol($url, $settings) {
   }
   // Provide unique id, so we can identify box for particular video on the page.
   $video_embed_aol_container_id = drupal_html_id('video-embed-aol-container-' . md5($url . serialize($settings)));
-  $boxes_settings[$video_embed_aol_container_id] = $settings;
+
   $url = VIDEO_EMBED_AOL_API_SINGLE_VIDEO_ENDPOINT . '/' . $video_id . '/info.json';
   $js_settings = array(
     'video_embed_aol' => array(
-      $video_embed_aol_container_id => array('api_endpoint_url' => url($url, array('query' => $settings)))
-    )
+      $video_embed_aol_container_id => array('api_endpoint_url' => url($url, array('query' => $settings))),
+    ),
   );
 
   drupal_add_js($js_settings, array('type' => 'setting'));
@@ -66,15 +66,15 @@ function video_embed_aol_handle_aol($url, $settings) {
     '#type' => 'container',
     '#attached' => array(
       'js' => array(
-        drupal_get_path('module', 'video_embed_aol') . '/video_embed_aol.js'
+        drupal_get_path('module', 'video_embed_aol') . '/video_embed_aol.js',
       )
     ),
     '#attributes' => array(
       'class' => array(
-        'video-embed-aol-container'
+        'video-embed-aol-container',
       ),
-      'id' => $video_embed_aol_container_id
-    )
+      'id' => $video_embed_aol_container_id,
+    ),
   );
   $build['message'] = array('#markup' => t(variable_get('video_embed_aol_loading_video_msg', 'Loading video...')));
   return $build;
@@ -83,13 +83,13 @@ function video_embed_aol_handle_aol($url, $settings) {
 /**
  * Implements of 'thumbnail_function' callback.
  *
- * @see video_embed_aol_video_embed_handler_info().
+ * @see video_embed_aol_video_embed_handler_info()
  */
 function video_embed_aol_handle_aol_thumbnail($url) {
   $aol_video_data = _video_embed_aol_extract_aol_video_data_from_url($url);
   $return = array(
     'id'  => '',
-    'url' => ''
+    'url' => '',
   );
   if ($aol_video_data) {
     $return = array(
@@ -104,7 +104,7 @@ function video_embed_aol_handle_aol_thumbnail($url) {
 /**
  * Implements callback "form".
  *
- * @see video_embed_aol_video_embed_handler_info().
+ * @see video_embed_aol_video_embed_handler_info()
  */
 function video_embed_aol_handle_aol_form($defaults) {
   $form = array();
@@ -117,14 +117,14 @@ function video_embed_aol_handle_aol_form($defaults) {
     'jp'  => t('Japanese'),
     'es'  => t('Spanish'),
     'de'  => t('German/Deutch'),
-    'any' => t('Any language')
+    'any' => t('Any language'),
   );
   $yes_no_options = array(t('No'), t('Yes'));
 
   $settings = array(
     "height"             => array(
       "#description" => t("Embed height value"),
-      "#type"        => "textfield"
+      "#type"        => "textfield",
     ),
     "width"              => array(
       "#description" => t("Embed width value (Default 480)"),
@@ -132,11 +132,11 @@ function video_embed_aol_handle_aol_form($defaults) {
     ),
     "sid"                => array(
       "#description" => t("Account associated syndicator ID"),
-      "#type"        => "textfield"
+      "#type"        => "textfield",
     ),
     "skey"               => array(
       "#description" => t("Setting key"),
-      "#type"        => "textfield"
+      "#type"        => "textfield",
     ),
     "add_ons"            => array(
       "#description" => t("Include/exclude add-ons for video"),
@@ -151,11 +151,11 @@ function video_embed_aol_handle_aol_form($defaults) {
     "country"            => array(
       "#description" => t("Filter the results to include only videos which are playable in the chosen country"),
       "#type"        => "select",
-      '#options'     => $country_list
+      '#options'     => $country_list,
     ),
     "domain"             => array(
       "#description" => t("Account associated domain. If empty then 'all'"),
-      "#type"        => "textfield"
+      "#type"        => "textfield",
     ),
     "num_related_return" => array(
       "#description" => t("Number of related videos to return per video."),
@@ -186,7 +186,7 @@ function video_embed_aol_handle_aol_form($defaults) {
 /**
  * Implements callback "data_function".
  *
- * @see video_embed_aol_video_embed_handler_info().
+ * @see video_embed_aol_video_embed_handler_info()
  */
 function video_embed_aol_handle_aol_data($url) {
   $aol_video_data = _video_embed_aol_extract_aol_video_data_from_url($url);
