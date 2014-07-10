@@ -4,8 +4,6 @@ description = "Provide integration with AOL ON Video Content service"
 name = "Video Embed AOL"
 package = "Media"
 
-version = "7.x-1.0"
-
 dependencies[] = field
 dependencies[] = entity
 dependencies[] = video_embed_field
