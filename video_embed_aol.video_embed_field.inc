@@ -21,15 +21,15 @@ function video_embed_aol_video_embed_handler_info() {
       'on.aol.com',
     ),
     'defaults'           => array(
-      "sid"                => '',
-      "skey"               => '',
-      "add_ons"            => 0,
-      "auto_start"         => 0,
-      "country"            => '',
-      "domain"             => 'all',
-      "num_related_return" => 10,
-      "transcript"         => 0,
-      "video_language"     => 'en',
+      'sid'                => '',
+      'skey'               => '',
+      'add_ons'            => 0,
+      'auto_start'         => 0,
+      'country'            => '',
+      'domain'             => 'all',
+      'num_related_return' => 10,
+      'transcript'         => 0,
+      'video_language'     => 'en',
       'width'              => 480,
       'height'             => 401,
     ),
@@ -39,7 +39,7 @@ function video_embed_aol_video_embed_handler_info() {
 }
 
 /**
- * Implements of 'function' callback.
+ * Implements 'function' callback.
  *
  * @see video_embed_aol_video_embed_handler_info()
  */
@@ -81,7 +81,7 @@ function video_embed_aol_handle_aol($url, $settings) {
 }
 
 /**
- * Implements of 'thumbnail_function' callback.
+ * Implements 'thumbnail_function' callback.
  *
  * @see video_embed_aol_video_embed_handler_info()
  */
@@ -122,54 +122,54 @@ function video_embed_aol_handle_aol_form($defaults) {
   $yes_no_options = array(t('No'), t('Yes'));
 
   $settings = array(
-    "height"             => array(
-      "#description" => t("Embed height value"),
-      "#type"        => "textfield",
+    'height'             => array(
+      '#description' => t('Embed height value'),
+      '#type'        => 'textfield',
     ),
-    "width"              => array(
-      "#description" => t("Embed width value (Default 480)"),
-      "#type"        => "textfield",
+    'width'              => array(
+      '#description' => t('Embed width value (Default 480)'),
+      '#type'        => 'textfield',
     ),
-    "sid"                => array(
-      "#description" => t("Account associated syndicator ID"),
-      "#type"        => "textfield",
+    'sid'                => array(
+      '#description' => t('Account associated syndicator ID'),
+      '#type'        => 'textfield',
     ),
-    "skey"               => array(
-      "#description" => t("Setting key"),
-      "#type"        => "textfield",
+    'skey'               => array(
+      '#description' => t('Setting key'),
+      '#type'        => 'textfield',
     ),
-    "add_ons"            => array(
-      "#description" => t("Include/exclude add-ons for video"),
-      "#type"        => "select",
+    'add_ons'            => array(
+      '#description' => t('Include/exclude add-ons for video'),
+      '#type'        => 'select',
       '#options'     => $yes_no_options,
     ),
-    "auto_start"         => array(
-      "#description" => t("The video starts playing automatically"),
-      "#type"        => "select",
+    'auto_start'         => array(
+      '#description' => t('The video starts playing automatically'),
+      '#type'        => 'select',
       '#options'     => $yes_no_options,
     ),
-    "country"            => array(
-      "#description" => t("Filter the results to include only videos which are playable in the chosen country"),
-      "#type"        => "select",
+    'country'            => array(
+      '#description' => t('Filter the results to include only videos which are playable in the chosen country'),
+      '#type'        => 'select',
       '#options'     => $country_list,
     ),
-    "domain"             => array(
-      "#description" => t("Account associated domain. If empty then 'all'"),
-      "#type"        => "textfield",
+    'domain'             => array(
+      '#description' => t('Account associated domain. If empty then \'all\''),
+      '#type'        => 'textfield',
     ),
-    "num_related_return" => array(
-      "#description" => t("Number of related videos to return per video."),
-      "#type"        => "select",
+    'num_related_return' => array(
+      '#description' => t('Number of related videos to return per video.'),
+      '#type'        => 'select',
       '#options'     => drupal_map_assoc(range(0, 20)),
     ),
-    "transcript"         => array(
-      "#description" => t("Include/exclude transcript for video"),
-      "#type"        => "select",
+    'transcript'         => array(
+      '#description' => t('Include/exclude transcript for video'),
+      '#type'        => 'select',
       '#options'     => $yes_no_options,
     ),
-    "video_language"     => array(
-      "#description" => t("Filter by language (Default is English)."),
-      "#type"        => "select",
+    'video_language'     => array(
+      '#description' => t('Filter by language (Default is English).'),
+      '#type'        => 'select',
       '#options'     => $languages,
     ),
   );
