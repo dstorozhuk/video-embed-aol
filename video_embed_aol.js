@@ -12,7 +12,7 @@
             crossDomain: true,
             dataType: 'json',
             error: function() {
-              $('#' + selector).text(Drupal.t('Error'))
+              $('#' + selector).text(Drupal.t('Error'));
             },
             success: function(data) {
               if (typeof data.items !== 'undefined') {
@@ -25,10 +25,10 @@
               }
             }
           });
-        }
+        };
         $.each(settings.video_embed_aol, get_videos);
       }
     }
-  }
+  };
 
 })(jQuery);
