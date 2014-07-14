@@ -27,14 +27,17 @@ function video_embed_aol_field_info_alter(&$info) {
  * Implements hook_form_field_ui_field_edit_form_alter().
  */
 function video_embed_aol_form_field_ui_field_edit_form_alter(&$form, &$form_state, $form_id) {
+  $field = $form['#field'];
   $instance = $form['#instance'];
-  $form['instance']['settings']['use_id'] = array(
-    '#type'          => 'radios',
-    '#title'         => t('AOL: Use video ID instead of URL'),
-    '#default_value' => $instance['settings']['use_id'],
-    '#options'       => array(t('No'), t('Yes')),
-    '#description'   => t('AOI ON videos provider only.'),
-  );
+  if ($field['type'] == 'video_embed_field') {
+    $form['instance']['settings']['use_id'] = array(
+      '#type'          => 'radios',
+      '#title'         => t('AOL: Use video ID instead of URL'),
+      '#default_value' => $instance['settings']['use_id'],
+      '#options'       => array(t('No'), t('Yes')),
+      '#description'   => t('AOI ON videos provider only.'),
+    );
+  }
 }
 
 
