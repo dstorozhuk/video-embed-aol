@@ -93,8 +93,8 @@ function _video_embed_aol_get_video_info($video_id, array $settings = array()) {
  *   Array of video info or FALSE if can't fetch the info.
  */
 function _video_embed_aol_extract_aol_video_data_from_url($url, $settings = array()) {
-  $posible_video_id = _video_embed_aol_extract_aol_video_id_from_url($url);
-  $video_info = _video_embed_aol_get_video_info($posible_video_id, $settings);
+  $possible_video_id = _video_embed_aol_extract_aol_video_id_from_url($url);
+  $video_info = _video_embed_aol_get_video_info($possible_video_id, $settings);
   return $video_info;
 }
 
@@ -109,16 +109,12 @@ function _video_embed_aol_extract_aol_video_data_from_url($url, $settings = arra
  */
 function _video_embed_aol_extract_aol_video_id_from_url($url) {
   $parsed = @parse_url($url);
-  if ($parsed) {
-    if (isset($parsed['path'])) {
-      $exploded_path = explode('-', $parsed['path']);
-      $posible_video_id = end($exploded_path);
-      if (is_numeric($posible_video_id)) {
-        return $posible_video_id;
-      }
-      return FALSE;
+  if (!empty($parsed['path'])) {
+    $exploded_path = explode('-', $parsed['path']);
+    $possible_video_id = end($exploded_path);
+    if (is_numeric($possible_video_id)) {
+      return $possible_video_id;
     }
-    return FALSE;
   }
   return FALSE;
 }
