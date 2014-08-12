@@ -1,4 +1,3 @@
-
 /**
  * @file
  * This file contains an AJAX loader for AOL ON video player.
@@ -8,10 +7,10 @@
 
   Drupal.behaviors.video_embed_aol = {
     attach: function (context, settings) {
-      /**
+      /*
        * Load the information about the video and insert video script on it's place.
        */
-      if  (typeof settings.video_embed_aol !== 'undefined' ) {
+      if  (typeof settings.video_embed_aol !== 'undefined') {
 
         var get_videos = function (selector, val) {
           $('#' + selector, context).once (selector, function() {
