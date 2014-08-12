@@ -1,3 +1,9 @@
+
+/**
+ * @file
+ * This file contains an AJAX loader for AOL ON video player.
+ */
+
 (function($) {
 
   Drupal.behaviors.video_embed_aol = {
